@@ -1,5 +1,6 @@
 package com.github.quadflask.react.navermap;
 
+import android.app.Activity;
 import android.graphics.Rect;
 import android.view.View;
 
@@ -8,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import com.airbnb.android.react.maps.SizeReportingShadowNode;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.common.MapBuilder;
@@ -31,7 +33,7 @@ import static com.github.quadflask.react.navermap.ReactUtil.toNaverLatLng;
 
 public class RNNaverMapViewManager extends ViewGroupManager<RNNaverMapViewContainer> {
     private final ReactApplicationContext appContext;
-    private final FusedLocationSource locationSource;
+    // private final FusedLocationSource locationSource;
 
     private static final int ANIMATE_TO_REGION = 1;
     private static final int ANIMATE_TO_COORDINATE = 2;
@@ -39,6 +41,8 @@ public class RNNaverMapViewManager extends ViewGroupManager<RNNaverMapViewContai
     private static final int SET_LOCATION_TRACKING_MODE = 4;
     private static final int ANIMATE_TO_COORDINATES = 6;
     private static final int SET_LAYER_GROUP_ENABLED = 7;
+    private static final int MAP_INIT = 1000;
+
     private static final List<String> LAYER_GROUPS = Collections.unmodifiableList(Arrays.asList(
             NaverMap.LAYER_GROUP_BUILDING,
             NaverMap.LAYER_GROUP_TRANSIT,
@@ -51,7 +55,13 @@ public class RNNaverMapViewManager extends ViewGroupManager<RNNaverMapViewContai
     public RNNaverMapViewManager(ReactApplicationContext context) {
         super();
         this.appContext = context;
-        locationSource = new FusedLocationSource(context.getCurrentActivity(), 0x1000);
+        // locationSource = new FusedLocationSource(context.getCurrentActivity(), 0x1000);
+    }
+
+    @ReactMethod
+    public void onInit(RNNaverMapViewContainer mapView) {
+        Activity currentActivity = appContext.getCurrentActivity();
+        mapView.setLocationSource(new FusedLocationSource(currentActivity, 0x1000));
     }
 
     @NonNull
@@ -63,7 +73,7 @@ public class RNNaverMapViewManager extends ViewGroupManager<RNNaverMapViewContai
     @NonNull
     @Override
     protected RNNaverMapViewContainer createViewInstance(@NonNull ThemedReactContext reactContext) {
-        return new RNNaverMapViewContainer(reactContext, appContext, locationSource, getNaverMapViewOptions());
+        return new RNNaverMapViewContainer(reactContext, appContext, null, getNaverMapViewOptions());
     }
 
     @Override
@@ -237,6 +247,10 @@ public class RNNaverMapViewManager extends ViewGroupManager<RNNaverMapViewContai
     @Override
     public void receiveCommand(@NonNull RNNaverMapViewContainer mapView, int commandId, @Nullable ReadableArray args) {
         switch (commandId) {
+            case MAP_INIT: {
+                onInit(mapView);
+                break;
+            }
             case ANIMATE_TO_REGION: {
                 final ReadableMap region = args.getMap(0);
                 final double lat = region.getDouble("latitude");
@@ -328,6 +342,7 @@ public class RNNaverMapViewManager extends ViewGroupManager<RNNaverMapViewContai
     public java.util.Map<String, Integer> getCommandsMap() {
         return MapBuilder.<String, Integer>builder()
                 .put("animateToRegion", ANIMATE_TO_REGION)
+                .put("onInit", MAP_INIT)
                 .put("animateToCoordinate", ANIMATE_TO_COORDINATE)
                 .put("animateToTwoCoordinates", ANIMATE_TO_TWO_COORDINATES)
                 .put("setLocationTrackingMode", SET_LOCATION_TRACKING_MODE)

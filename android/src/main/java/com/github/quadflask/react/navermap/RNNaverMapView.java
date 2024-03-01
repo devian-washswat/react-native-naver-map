@@ -2,6 +2,7 @@ package com.github.quadflask.react.navermap;
 
 import android.graphics.PointF;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -33,12 +34,13 @@ public class RNNaverMapView extends MapView implements OnMapReadyCallback, Naver
     private long lastTouch = 0;
     private final List<RNNaverMapFeature<?>> features = new ArrayList<>();
 
-    public RNNaverMapView(@NonNull ThemedReactContext themedReactContext, ReactApplicationContext appContext, FusedLocationSource locationSource, NaverMapOptions naverMapOptions, Bundle instanceStateBundle) {
+    public RNNaverMapView(@NonNull ThemedReactContext themedReactContext, ReactApplicationContext appContext, NaverMapOptions naverMapOptions, Bundle instanceStateBundle, FusedLocationSource locationSource) {
         super(ReactUtil.getNonBuggyContext(themedReactContext, appContext), naverMapOptions);
-        this.themedReactContext = themedReactContext;
-        this.locationSource = locationSource;
         super.onCreate(instanceStateBundle);
-//        super.onStart();
+
+        this.themedReactContext = themedReactContext;
+        this.locationSource = null;
+
         getMapAsync(this);
 
         // Set up a parent view for triggering visibility in subviews that depend on it.
@@ -53,9 +55,11 @@ public class RNNaverMapView extends MapView implements OnMapReadyCallback, Naver
         addView(attacherGroup);
     }
 
-    @Override
-    public void onMapReady(@NonNull NaverMap naverMap) {
-        this.naverMap = naverMap;
+    public void setLocationSource(FusedLocationSource locationSource) {
+        if(locationSource == null) {
+            throw new AssertionError("locationSource cannot be null");
+        }
+        this.locationSource = locationSource;
         this.naverMap.setLocationSource(locationSource);
         this.naverMap.setOnMapClickListener(this);
         this.naverMap.addOnCameraIdleListener(this);
@@ -68,6 +72,12 @@ public class RNNaverMapView extends MapView implements OnMapReadyCallback, Naver
                 lastTouch = System.currentTimeMillis();
             }
         });
+    }
+
+    @Override
+    public void onMapReady(@NonNull NaverMap naverMap) {
+        this.naverMap = naverMap;
+
         onInitialized();
     }
 

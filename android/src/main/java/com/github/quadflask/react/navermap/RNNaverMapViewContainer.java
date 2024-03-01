@@ -25,7 +25,7 @@ public class RNNaverMapViewContainer extends FrameLayout implements RNNaverMapVi
 
     public RNNaverMapViewContainer(@NonNull ThemedReactContext themedReactContext, ReactApplicationContext appContext, FusedLocationSource locationSource, NaverMapOptions naverMapOptions) {
         super(ReactUtil.getNonBuggyContext(themedReactContext, appContext));
-        this.mapView = new RNNaverMapView(themedReactContext, appContext, locationSource, naverMapOptions, instanceStateBundle);
+        this.mapView = new RNNaverMapView(themedReactContext, appContext, naverMapOptions, instanceStateBundle, null);
         addView(mapView);
     }
 
@@ -49,6 +49,10 @@ public class RNNaverMapViewContainer extends FrameLayout implements RNNaverMapVi
                     MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY));
             child.layout(0, 0, child.getMeasuredWidth(), child.getMeasuredHeight());
         }
+    }
+
+    public void setLocationSource(FusedLocationSource locationSource) {
+        this.mapView.setLocationSource(locationSource);
     }
 
     @Override

@@ -89,6 +89,7 @@ export interface NaverMapViewProps {
     logoMargin?: Rect;
     logoGravity?: Gravity;
     onInitialized?: Function;
+    onInit: () => void,
     onCameraChange?: (event: {
         latitude: number;
         longitude: number;
@@ -130,6 +131,11 @@ export default class NaverMapView extends Component<NaverMapViewProps, {}> {
         this.ref = ref;
         this.nodeHandle = findNodeHandle(ref);
     };
+
+    onInit = () => {
+        console.log('>>>>>>', 'CALL OnInit');
+        this.dispatchViewManagerCommand('onInit', []);
+    }
 
     animateToCoordinate = (coord: Coord) => {
         this.dispatchViewManagerCommand('animateToCoordinate', [coord]);
